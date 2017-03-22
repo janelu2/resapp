@@ -1,0 +1,9 @@
+{% extends 'rapp/base.html' %}
+
+{% block content %}
+	<p><b>Student: </b><a href="{% url 'form_detail' pk=form.pk %}"> {{ form.student }}</a></p>
+	<p><b>Hall/Apartment: </b>{{ form.student.get_status_display }} room {{ form.student.room_number }}.</p>
+	<p><b>Signed: </b><a href="#">True, click to view signature</a>.</p>
+	<p><b>Issuing RA: </b><a href="#">{{ form.author }}</a></p>
+	<br><p><b>Date: {{ form.published_date }}</b></p>
+{% endblock %}

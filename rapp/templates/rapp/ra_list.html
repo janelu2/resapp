@@ -1,0 +1,35 @@
+{% extends 'rapp/base.html' %}
+
+{% block title %}RA List{% endblock %}
+
+{% block content %}
+<div class="table-responsive">
+ <table class="table table-striped" style="border-collapse:collapse;">
+    <thead>
+        <tr>
+            <th>Name</th>   
+            <th>Hall</th>
+            <th>Room #</th>
+            <th>Email</th>
+            <th>Student ID</th>
+            <th>View Emergency Info</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ra in ras %}
+        <tr data-toggle="collapse" data-target="{{ ra.student_info.id }}"" class="accordion-toggle">
+            <td>{{ ra.student_info }}</td>
+            <td>{{ ra.hall }}</td>
+            <td>{{ ra.student_info.room_number }}</td>
+            <td>{{ ra.student_email }}</td>
+            <td>{{ ra.student_info.id }}</td>
+            <td><button type="button" class="btn btn-secondary btn-sm" data-toggle="collapse" data-target="#{{ ra.student_info.id }}">View Emergency Contact Info</td>
+        </tr>
+        <tr>
+            <td colspan="7" class="hiddenRow"><div id="{{ ra.student_info.id }}" class="accordian-body collapse"><blockquote>Emergency Contact: {{ ra.emergency_contact }}</blockquote></div></td>
+        </tr>
+      {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

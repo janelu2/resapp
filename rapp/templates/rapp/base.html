@@ -1,0 +1,64 @@
+{% load staticfiles %}
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>NMT Residential Life Assistant</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="{% static 'form.css' %}">
+        <link href="https://fonts.googleapis.com/css?family=Cabin" rel="stylesheet" type="text/css">
+    <div class="page-header-yes">
+        <h1><a href="" style="text-decoration:none; color: #ffffff">NMT Residential Life Assistant</a></h1>
+    </div>    
+    </head>
+
+    <body>
+    <div class="content">
+    <h2 class="sub-header">{% block title %}{% endblock %}</h2>
+    <div class="content container">
+        <div class="row">
+            <div class="col-sm-3 sidebar" style="top: 140px; width: 200px;">
+              <ul class="nav nav-sidebar">
+                <li class="active"><a href="/">Dashboard <span class="sr-only">(current)</span></a></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown"></i> Received Forms <span class="caret"></span></a>
+                  <ul class="dropdown-menu" role="menu">
+                    <li><a href="/lockout_list">Resident Lockout</a></li>
+                    <li><a href="#">Program Planner</a></li>
+                    <li><a href="#">Incident Report</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown"></i> Residence Halls <span class="caret"></span></a>
+                  <ul class="dropdown-menu" role="menu">
+                    <li><a href="/halls/1">South</a></li>
+                    <li><a href="/halls/2">West</a></li>
+                    <li><a href="/halls/3">Alta</a></li>
+                    <li><a href="/halls/4">Torres</a></li>
+                    <li><a href="/halls/5">Baca</a></li>
+                    <li><a href="/halls/6">Presidents</a></li>
+                    <li><a href="/halls/7">Desert Willow</a></li>
+                    <li><a href="/halls/8">Driscoll</a></li>
+                </ul>
+            </li>
+            <li><a href="/ra_list">RAs</a></li>
+            <li><a href="#">Statistics</a></li>
+            <li><a href="/admin">Admin Management</a></li>
+            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        </ul>
+        </div>
+            {% block content %}
+            {% endblock %}
+            </div>
+        </div>
+        </div>
+    </div>
+    </body>
+
+</html>
