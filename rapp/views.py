@@ -27,3 +27,12 @@ def ra_list(request):
 
 def logout(request):
     return render(request, 'rapp/logout.html')
+
+#statistics page
+def stats(request):
+    return render(request, 'rapp/statistics.html')
+
+#return ONE instance
+def student_detail(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    return render(request, 'rapp/student_profile.html', {'student': student}) 

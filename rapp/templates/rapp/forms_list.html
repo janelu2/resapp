@@ -21,7 +21,7 @@
             <td>{{ form.published_date }}</td>
             <td><a href="{% url 'form_detail' pk=form.id %}"> {{ form.student.status }}</a></td>
             <td>{{ form.student.room_number }}</td>
-            <td><a href="{% url 'form_detail' pk=form.pk %}"> {{ form.student }}</a></td>
+            <td><a href="{% url 'student_detail' pk=form.student.pk %}"> {{ form.student }}</a></td>
             <td><a href="{% url 'form_detail' pk=form.pk %}"> {{ form.author }}</a></td>
             <td>{{ form.id }}</td>
             <td><button type="button" class="btn btn-secondary btn-sm" data-toggle="collapse" data-target="#{{ form.id }}">View Form Details</td>

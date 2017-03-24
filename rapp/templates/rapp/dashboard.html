@@ -3,5 +3,30 @@
 {% block title %}User Dashboard{% endblock %}
 
 {% block content %}
-
+<div class="col-md-6">
+<h4>Welcome, Mitch!</h4>
+{% load static %}
+<img src="{% static 'ackchuyually.png' %}" width="300;" height="300;" alt="My image"/>
+</div>
+<div class="col-md-6">
+<h4>Your Notifications</h4>
+<ul style="list-style: none;">
+	<li>
+		<h6><span class="glyphicon glyphicon-check"></span> 4 New Forms Need Review</h6>
+		<ul>
+			<li><a href="/ra/2">Room Inspection of Carter Radzka on March 18, 2017</a></li>
+			<li><a href="/ra/3">Room Inspection of Steven Ramsey on March 20, 2017</a></li>
+			<li><a href="/ra/4">Room Inspection of Julie Stevens on March 20, 2017</a></li>
+			<li><a href="/ra/5">Room Inspection of Bridget Daughton on March 20, 2017</a></li>
+		</ul>
+	</li>
+	<li>
+		<h6><span class="glyphicon glyphicon-envelope"></span> 2 New Messages</h6>
+		<ul>
+			<li><a href="#">RE: Problem Student in Torres Hall</a></li>
+			<li><a href="#">Desert Willow - Spring Fling Event Proposal</a></li>
+		</ul>
+	</li>
+</ul>
+</div>
 {% endblock %}
