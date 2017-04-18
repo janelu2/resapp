@@ -1,6 +1,9 @@
 from django.db import models
 from django.utils import timezone
 
+#import all the API models
+from .api_models import *
+
 class RoomInspectionForm(models.Model):
     author = models.ForeignKey('RA')
     text = models.TextField()
