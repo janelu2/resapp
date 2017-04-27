@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 # STUDENT CLASSES #
 #############################################
 class StudentBase(models.Model):
+
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField(null=True, blank=True)
