@@ -23,3 +23,7 @@ urlpatterns = [
     url(r'^logout/$', auth_views.logout, name='logout'),
     url(r'', include('rapp.urls')),
 ]
+
+urlpatterns += [
+    url('^accounts/', include('django.contrib.auth.urls')),
+]

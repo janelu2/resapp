@@ -35,7 +35,7 @@ class RA(StudentBase):
     room_number = models.CharField(max_length=10, null=True)
 
     def __str__(self):
-        return '%s %s: %s' % (self.first_name, self.last_name, self.hall)
+        return '%s %s' % (self.first_name, self.last_name)
 
 class ResidenceHall(models.Model):
     name = models.CharField(max_length=100)
@@ -63,7 +63,6 @@ class FormBase(models.Model):
 class RoomEntryRequestForm(FormBase):
     student = models.ForeignKey('Resident', null=True, on_delete=models.SET_NULL, )
     student_sig = models.FileField()
-    ra_sig = models.BooleanField(default=False)
     verification_method = models.TextField(max_length=40)
 
     def send_copy(self):
@@ -71,6 +70,9 @@ class RoomEntryRequestForm(FormBase):
 
     def __str__(self):
         return '%d - %s %s Room Entry Request on %s' % (self.id, self.student.first_name, self.student.last_name, self.date)
+
+    def name(self):
+        return 'Room Entry Requests'
 
 class ProgramPacket(FormBase):
     program_title = models.TextField(max_length=100)
@@ -91,6 +93,15 @@ class ProgramPacket(FormBase):
     supplies = models.TextField(max_length=300)
     proposed_cost = models.PositiveIntegerField()
 
+    @property
+    def approved(self):
+        if self.coordinator_approval == True:
+            return True
+        return False
+
+    def __str__(self):
+        return 'Program Packets'
+
 class SafetyInspectionViolation(FormBase):
     prohibited_appliances = models.BooleanField(default=False)
     candle_incense = models.BooleanField(default=False)
@@ -103,6 +114,9 @@ class SafetyInspectionViolation(FormBase):
     other = models.TextField(max_length=200, blank=True)
     sig = models.FileField()
     additional_action = models.BooleanField(default=False)
+
+    def __str__(self):
+        return 'Safety Inspection Violation Reports'
 
 class FireAlarm(FormBase):
     occurence_time = models.TimeField()
@@ -118,5 +132,8 @@ class FireAlarm(FormBase):
     )
 
     fire_explanation = models.TextField(max_length=200, blank=True, help_text="If there was an actual fire, please explain here")
-    other_ras = models.ManyToManyField('RA', null=True, related_name='otherRAs')
-    notes = models.TextField(max_length=500)
+    other_ras = models.TextField(max_length=500, default="none")
+    notes = models.TextField(max_length=500, blank=True)
+
+    def __str__(self):
+        return 'Fire Alarm Reports'

@@ -1,0 +1,61 @@
+{% extends 'rapp/base.html' %}
+{% block title %}Room Entry Request Forms{% endblock %}
+
+{% block content %}
+
+<script type="text/javascript">
+    $(function() {
+        $('.pop').on('click', function() {
+            $('.imagepreview').attr('src', $(this).find('img').attr('src'));
+            $('#imagemodal').modal('show');   
+        });     
+});
+</script>
+
+<div class="table-responsive">
+ <table class="table table-striped" style="border-collapse:collapse;">
+    <thead>
+        <tr>
+            <th>Date/Time</th>   
+            <th>Hall</th>
+            <th>Room #</th>
+            <th>Resident Name</th>
+            <th>RA Author</th>
+            <th>Form ID</th>
+            <th>View Form</th>
+        </tr>
+    </thead>
+    <tbody>
+    <a href="#" class="pop">
+        {% for form in forms %}
+        <tr data-toggle="collapse" data-target="{{ form.id }}"" class="accordion-toggle">
+            <td>{{ form.date }}</td>
+            <td>{{ form.hall.name }}</td>
+            <td>{{ form.room_number }}</td>
+            <td><a href="#"> {{ form.student }}</a></td>
+            <td><a href="#"> {{ form.author }}</a></td>
+            <td>{{ form.id }}</td>
+            <td><button type="button" class="btn btn-secondary btn-sm" data-toggle="collapse" data-target="#{{ form.id }}">View Form Details</td>
+        </tr>
+        <tr>
+            <td colspan="7" class="hiddenRow"><div id="{{ form.id }}" class="accordian-body collapse"><blockquote><a href="#" class="pop">View Student Signature</a>
+            <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">              
+                  <div class="modal-body">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <img src="" class="imagepreview" style="width: 100%;" >
+                  </div>
+                </div>
+              </div>
+            </div><br>
+            Verification Method: {{ form.verification_method }}</div></td>
+        </tr>
+      {% endfor %}
+  </tbody>
+</table>
+
+
+
+</div>
+{% endblock %}
