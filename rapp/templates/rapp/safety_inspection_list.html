@@ -1,5 +1,5 @@
 {% extends 'rapp/base.html' %}
-{% block title %}Resident Lockout Forms{% endblock %}
+{% block title %}Safety Inspection Violation Reports{% endblock %}
 
 {% block content %}
 <div class="table-responsive">
@@ -19,7 +19,7 @@
         {% for form in forms %}
         <tr data-toggle="collapse" data-target="{{ form.id }}"" class="accordion-toggle">
             <td>{{ form.published_date }}</td>
-            <td><a href="{% url 'form_detail' pk=form.id %}"> {{ form.student.status }}</a></td>
+            <td><a href="{% url 'form_detail' pk=form.id %}"> {{ form.status }}</a></td>
             <td>{{ form.student.room_number }}</td>
             <td><a href="{% url 'student_detail' pk=form.student.pk %}"> {{ form.student }}</a></td>
             <td><a href="{% url 'form_detail' pk=form.pk %}"> {{ form.author }}</a></td>

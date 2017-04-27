@@ -1,21 +1,31 @@
 from django.shortcuts import render, get_object_or_404
-from .models import RoomInspectionForm, Student, ResidenceHall, RA
+from .models import Resident, RA, ResidenceHall, RoomEntryRequestForm, ProgramPacket, SafetyInspectionViolation, FireAlarm
 from django.utils import timezone
-
-# Create your views here.
-
-#return a collection
-def forms_list(request):
-    forms = RoomInspectionForm.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
-    return render(request, 'rapp/forms_list.html', {'forms': forms})
+from django.contrib.auth.models import User, Group
 
 #return ONE instance
-def form_detail(request, pk):
-    form = get_object_or_404(RoomInspectionForm, pk=pk)
-    return render(request, 'rapp/form_detail.html', {'form': form}) 
+#def form_detail(request, pk):
+#    form = get_object_or_404(RoomInspectionForm, pk=pk)
+#    return render(request, 'rapp/form_detail.html', {'form': form}) 
 
 def dashboard(request):
     return render(request, 'rapp/dashboard.html')
+
+def RoomEntryRequestList(request):
+    forms = RoomEntryRequestForm.objects.all().order_by('-date')
+    return render(request, 'rapp/room_entry_list.html', {'forms': forms, 'page_name': "Room Entry Request Forms"})
+
+def ProgramPacketList(request):
+    forms = ProgramPacket.objects.all().order_by('-date')
+    return render(request, 'rapp/program_packets_list.html', {'forms': forms, 'page_name': "Program Packets"})
+
+def SafetyInspectionViolationList(request):
+    forms = SafetyInspectionViolation.objects.all().order_by('-date')
+    return render(request, 'rapp/safety_inspection_list.html', {'forms': forms, 'page_name': "Safety Violation Reports"})
+
+def FireAlarmList(request):
+    forms = FireAlarm.objects.all().order_by('-date')
+    return render(request, 'rapp/fire_alarms_list.html', {'forms': forms, 'page_name': "Fire Alarm Reports"})
 
 def halls_list(request, pk):
     students = Student.objects.filter(status__pk=pk)

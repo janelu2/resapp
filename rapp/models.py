@@ -1,56 +1,140 @@
 from django.db import models
 from django.utils import timezone
+from django.core.mail import send_mail
 
-#import all the API models
-from .api_models import *
+#############################################
+# STUDENT CLASSES #
+#############################################
+class StudentBase(models.Model):
 
-class RoomInspectionForm(models.Model):
-    author = models.ForeignKey('RA')
-    text = models.TextField()
-    student = models.ForeignKey('Student', null=True, on_delete=models.SET_NULL)
-    id = models.AutoField(primary_key=True)
-    created_date = models.DateTimeField(
-            default=timezone.now)
-    published_date = models.DateTimeField(
-            blank=True, null=True)
-
-    def publish(self):
-        self.published_date = timezone.now()
-        self.save()
-
-    def __str__(self):
-        return '%d - %s %s Room Inspection on %s' % (self.id, self.student.first_name, self.student.last_name, self.published_date)
-
-class Student(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField(null=True, blank=True)
     id = models.PositiveIntegerField(primary_key=True, default=0, unique=True, help_text="Unique 900# ID for this particular student")
-    status = models.ForeignKey('ResidenceHall', null=True, on_delete=models.SET_NULL)
+    student_email = models.EmailField(max_length=100, default='lattaeo@gmail.com')
+    emergency_contact = models.CharField(max_length=40, default='none given', blank=True)
+    contact_relationship = models.CharField(max_length=100, default='none given', blank=True)
+    emergency_contact_phone = models.PositiveIntegerField(default='1234567890', blank=True)
+    home_addr = models.TextField(max_length=100, default='none given', blank=True)
+    car_plate = models.CharField(max_length=20, default='none given', blank=True)
+    car_info = models.TextField(max_length=100, help_text="Make/model/description of car", default='none given', blank=True)
+
+    class Meta:
+        abstract = True
+
+class Resident(StudentBase):
+    hall = models.ForeignKey('ResidenceHall', null=True, on_delete=models.SET_NULL)
     room_number = models.CharField(max_length=10, null=True)
-    #add RA at some point
+    RA = models.ForeignKey('RA', null=True, on_delete=models.SET_NULL)
+    notes = models.TextField(max_length=1000, blank=True, default='No notes here!')
 
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
 
-class RA(models.Model):
-    student_info = models.ForeignKey('Student', null=True, on_delete=models.SET_NULL)
-    student_email = models.CharField(max_length=100)
-    emergency_contact = models.CharField(max_length=40)
-    contact_relationship = models.CharField(max_length=100)
-    emergency_contact_phone = models.PositiveIntegerField()
-    home_addr = models.TextField(max_length=100)
-    car_plate = models.CharField(max_length=20)
-    car_info = models.TextField(max_length=100, help_text="Make/model/description of car")
+class RA(StudentBase):
     hall = models.ForeignKey('ResidenceHall', null=True, on_delete=models.SET_NULL)
+    room_number = models.CharField(max_length=10, null=True)
 
     def __str__(self):
-        return '%s %s: %s' % (self.student_info.first_name, self.student_info.last_name, self.hall)
+        return '%s %s' % (self.first_name, self.last_name)
 
 class ResidenceHall(models.Model):
     name = models.CharField(max_length=100)
     rlc = models.ForeignKey('auth.user')
-    id = models.PositiveIntegerField(primary_key=True, default=0, unique=True, help_text="Unique 900# ID for this particular student")
+    id = models.PositiveIntegerField(primary_key=True, default=0, unique=True, help_text="Just an ID #")
 
     def __str__(self):
         return '%s' % (self.name)
+
+#############################################
+# FORM CLASSES #
+#############################################
+
+#base ABSTRACT form class
+class FormBase(models.Model):
+    author = models.ForeignKey('RA')
+    hall = models.ForeignKey('ResidenceHall')
+    room_number = models.TextField(max_length=10)
+    id = models.AutoField(primary_key=True)
+    date = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+class RoomEntryRequestForm(FormBase):
+    student = models.ForeignKey('Resident', null=True, on_delete=models.SET_NULL, )
+    student_sig = models.FileField()
+    verification_method = models.TextField(max_length=40)
+
+    def send_copy(self):
+        send_mail('Hello!')
+
+    def __str__(self):
+        return '%d - %s %s Room Entry Request on %s' % (self.id, self.student.first_name, self.student.last_name, self.date)
+
+    def name(self):
+        return 'Room Entry Requests'
+
+class ProgramPacket(FormBase):
+    program_title = models.TextField(max_length=100)
+    program_date = models.DateField()
+    program_time = models.TimeField()
+    location1 = models.TextField(max_length=50)
+    space_need_reservation1 = models.BooleanField()
+    reservation_made1 = models.BooleanField()
+    location2 = models.TextField(max_length=50)
+    space_need_reservation2 = models.BooleanField()
+    reservation_made2 = models.BooleanField()
+    target_audience = models.TextField(max_length=200)
+    advertising = models.TextField(max_length=200)
+    coordinator_approval = models.BooleanField()
+    coordinator_sig = models.FileField()
+    sig_date = models.DateField()
+    program_description = models.TextField(max_length=500)
+    supplies = models.TextField(max_length=300)
+    proposed_cost = models.PositiveIntegerField()
+
+    @property
+    def approved(self):
+        if self.coordinator_approval == True:
+            return True
+        return False
+
+    def __str__(self):
+        return 'Program Packets'
+
+class SafetyInspectionViolation(FormBase):
+    prohibited_appliances = models.BooleanField(default=False)
+    candle_incense = models.BooleanField(default=False)
+    extension_cords = models.BooleanField(default=False)
+    lounge_furniture = models.BooleanField(default=False)
+    trash_violation = models.BooleanField(default=False)
+    animals = models.BooleanField(default=False)
+    alcohol_drugs = models.BooleanField(default=False)
+    fire_safety = models.BooleanField(default=False)
+    other = models.TextField(max_length=200, blank=True)
+    sig = models.FileField()
+    additional_action = models.BooleanField(default=False)
+
+    def __str__(self):
+        return 'Safety Inspection Violation Reports'
+
+class FireAlarm(FormBase):
+    occurence_time = models.TimeField()
+    specific_location = models.TextField(max_length=50)
+    ALARM_CAUSES = (
+        ('PULL_BOX', 'Pull Box'),
+        ('HEAT', 'Heat Detector'),
+        ('SMOKE', 'Smoke Detector'),
+        ('MALFUNCTION', 'Malfunction'),
+        ('DRILL', 'DRILL'),
+        ('UNKNOWN', 'Unknown'),
+        ('FIRE', 'Fire')
+    )
+
+    fire_explanation = models.TextField(max_length=200, blank=True, help_text="If there was an actual fire, please explain here")
+    other_ras = models.TextField(max_length=500, default="none")
+    notes = models.TextField(max_length=500, blank=True)
+
+    def __str__(self):
+        return 'Fire Alarm Reports'
