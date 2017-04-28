@@ -15,27 +15,27 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='ra',
             name='car_info',
-            field=models.TextField(blank=True, default='none given', help_text='Make/model/description of car', max_length=100),
+            field=models.TextField(blank=True, help_text='Make/model/description of car', max_length=100),
         ),
         migrations.AlterField(
             model_name='ra',
             name='car_plate',
-            field=models.CharField(blank=True, default='none given', max_length=20),
+            field=models.CharField(blank=True, max_length=20),
         ),
         migrations.AlterField(
             model_name='ra',
             name='contact_relationship',
-            field=models.CharField(blank=True, default='none given', max_length=100),
+            field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AlterField(
             model_name='ra',
             name='emergency_contact',
-            field=models.CharField(blank=True, default='none given', max_length=40),
+            field=models.CharField(blank=True, max_length=40),
         ),
         migrations.AlterField(
             model_name='ra',
             name='emergency_contact_phone',
-            field=models.PositiveIntegerField(blank=True, default='none given'),
+            field=models.PositiveIntegerField(blank=True),
         ),
         migrations.AlterField(
             model_name='ra',
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='ra',
             name='home_addr',
-            field=models.TextField(blank=True, default='none given', max_length=100),
+            field=models.TextField(blank=True, max_length=100),
         ),
         migrations.AlterField(
             model_name='ra',
@@ -65,27 +65,27 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='resident',
             name='car_info',
-            field=models.TextField(blank=True, default='none given', help_text='Make/model/description of car', max_length=100),
+            field=models.TextField(blank=True, help_text='Make/model/description of car', max_length=100),
         ),
         migrations.AlterField(
             model_name='resident',
             name='car_plate',
-            field=models.CharField(blank=True, default='none given', max_length=20),
+            field=models.CharField(blank=True, max_length=20),
         ),
         migrations.AlterField(
             model_name='resident',
             name='contact_relationship',
-            field=models.CharField(blank=True, default='none given', max_length=100),
+            field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AlterField(
             model_name='resident',
             name='emergency_contact',
-            field=models.CharField(blank=True, default='none given', max_length=40),
+            field=models.CharField(blank=True, max_length=40),
         ),
         migrations.AlterField(
             model_name='resident',
             name='emergency_contact_phone',
-            field=models.PositiveIntegerField(blank=True, default='none given'),
+            field=models.PositiveIntegerField(blank=True),
         ),
         migrations.AlterField(
             model_name='resident',
@@ -95,7 +95,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='resident',
             name='home_addr',
-            field=models.TextField(blank=True, default='none given', max_length=100),
+            field=models.TextField(blank=True, max_length=100),
         ),
         migrations.AlterField(
             model_name='resident',
