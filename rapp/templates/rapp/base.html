@@ -1,6 +1,8 @@
 {% load staticfiles %}
 
 <html>
+
+    {% if user.is_authenticated %}
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -61,5 +63,11 @@
         </div>
     </div>
     </body>
+
+    {% else %}
+    <p>You must be logged in to see this page.</p>
+    <a href="/login">Click here to login.</a>
+
+    {% endif %}
 
 </html>
