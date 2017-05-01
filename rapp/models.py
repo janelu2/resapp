@@ -33,7 +33,6 @@ class Resident(StudentBase):
     hall = models.ForeignKey('ResidenceHall', null=True, on_delete=models.SET_NULL, verbose_name="Residence Hall")
     room_number = models.CharField(max_length=10, null=True)
     RA = models.ForeignKey('RA', null=True, on_delete=models.SET_NULL)
-    notes = models.TextField(max_length=1000, blank=True, default='No notes here!', verbose_name="Additional notes on resident")
 
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
@@ -69,7 +68,7 @@ class FormBase(models.Model):
 
 class RoomEntryRequestForm(FormBase):
     student = models.ForeignKey('Resident', null=True, on_delete=models.SET_NULL, verbose_name="Resident name")
-    student_sig = models.BooleanField(default=False, verbose_name="Resident signed")
+    student_sig = models.BinaryField(default=0, verbose_name="Resident signature image")
     verification_method = models.TextField(null=True, max_length=40)
 
     def send_copy(self):
@@ -116,7 +115,7 @@ class SafetyInspectionViolation(FormBase):
     alcohol_drugs = models.BooleanField(default=False, verbose_name="Alcohol or drugs")
     fire_safety = models.BooleanField(default=False)
     other = models.TextField(null=True, max_length=200, blank=True)
-    sig = models.BooleanField(default=False, verbose_name="Signed")
+    sig = models.BinaryField(default=0, verbose_name="Student signature")
     additional_action = models.BooleanField(default=False, verbose_name="Additional action required")
 
     def __str__(self):
@@ -169,11 +168,11 @@ class ConditionReport(models.Model):
     id = models.AutoField(primary_key=True)
     room = models.ForeignKey("Room")
     resident = models.ForeignKey("Resident")
-    author = models.ForeignKey('User')
+    author = models.ForeignKey('auth.user', related_name='author')
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
-    editedby = models.ForeignKey('User')
-    images = postgres.fields.ArrayField(base_field=models.IntegerField)
+    editedby = models.ForeignKey('auth.user', related_name='editedby')
+    images = postgres.fields.ArrayField(base_field=models.IntegerField())
 
     def empty(self):
         # return via back relation if no residents are assigned to the room
@@ -181,7 +180,7 @@ class ConditionReport(models.Model):
 
 
 def now_add_hours_lambda(h):
-    return lambda: timezone.now + datetime.timedelta(hours=h)
+    return timezone.now() + datetime.timedelta(hours=h)
 
 
 class AuthToken(models.Model):
@@ -206,15 +205,13 @@ class Note(models.Model):
     id = models.AutoField(primary_key=True)
     top = models.BooleanField(default=False)
     resident = models.ForeignKey('Resident')
-    author = models.ForeignKey('User')
+    author = models.ForeignKey('auth.user')
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
-    content = models.TextField(max_length=1000)  # TODO perhaos be json field
+    content = models.TextField(max_length=1000)  # TODO perhaps be json field
     # comments = postgres.fields.ArrayField(base_field=models.IntegerField)  # Access through back related set
-    access = models.ManyToManyField("User")
-    access_level = models.CharField(max_length=2, choices=User.ACCESS_LEVELS, default=User.RA)
-
-
+    access = models.ManyToManyField("auth.user", related_name='note_access')
+    #access_level = models.CharField(max_length=2, choices=auth.user.ACCESS_LEVELS, default=auth.user.RA)
 
 #############################################
 # UNUSED For later Template system
@@ -222,10 +219,10 @@ class Note(models.Model):
 class FormTemplate(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    author = models.ForeignKey('User')
+    author = models.ForeignKey('auth.user')
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
-    editedby = models.ForeignKey('User')
+    editedby = models.ForeignKey('auth.user', related_name='formtemplate_editedby')
     templatedata = models.ForeignKey('FromTemplateData')
     # versions = postgres.fields.ArrayField(base_field=models.IntegerField) # Access through back related set
 
@@ -236,7 +233,7 @@ class FormTemplate(models.Model):
 class FromTemplateData(models.Model):
     id = models.AutoField(primary_key=True)
     created = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey('User')
+    author = models.ForeignKey('auth.user')
     from_template = models.ForeignKey('FormTemplate')
     template = models.TextField(max_length=1000)
     pairs = postgres.fields.JSONField()  # JSON pairs of names to types
@@ -253,14 +250,14 @@ class FormData(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
-    author = models.ForeignKey('User')
+    author = models.ForeignKey('auth.user')
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
-    editedby = models.ForeignKey('User')
+    editedby = models.ForeignKey('auth.user', related_name='formdata_editedby')
     template = models.ForeignKey('FromTemplateData')
     status = models.CharField(max_length=2, choices=STATUSES)
     data = postgres.fields.JSONField()  # json keyvalue pairs
-    images = postgres.fields.ArrayField(base_field=models.IntegerField)
+    images = postgres.fields.ArrayField(base_field=models.IntegerField())
 
 #############################################
 # Round and Issue system
@@ -272,13 +269,13 @@ class BuildingZone(models.Model):
     vectors = postgres.fields.ArrayField(
                 base_field=postgres.fields.ArrayField(
                     base_field=postgres.fields.ArrayField(
-                        base_field=models.IntegerField
+                        base_field=models.IntegerField()
                     )
                 )
             )
     parent = models.ForeignKey('BuildingZone', null=True,)
     # children = [areaid, areaid areaid, ...]
-    gps = postgres.fields.ArrayField(base_field=models.IntegerField)
+    gps = postgres.fields.ArrayField(base_field=models.IntegerField())
 
     def __str__(self):
         return '%s' % (self.name)
@@ -287,7 +284,7 @@ class BuildingZone(models.Model):
         #return list of nodes with check flag. (for determining round data compleateness)
         pass
 
-    def get_issue_nodes(self, resolved=false, limit=None):
+    def get_issue_nodes(self, resolved=False, limit=None):
         #return list of nodes without check flag that have current issues
         #include resolved issues if "resolved" is true
         #limit search to issues newer than "limit" date
@@ -299,7 +296,7 @@ class BuildingZoneNode(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
     zone = models.ForeignKey('BuildingZone')
-    location = postgres.fields.ArrayField(base_field=models.IntegerField)
+    location = postgres.fields.ArrayField(base_field=models.IntegerField())
     check = models.BooleanField()
 
     def __str__(self):
@@ -309,9 +306,9 @@ class BuildingZoneNode(models.Model):
 class BuildingZoneLabel(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    zone = models.ForeignKey('BuildingZone')
-    link = models.ForeignKey('BuildingZone')
-    location = postgres.fields.ArrayField(base_field=models.IntegerField)
+    zone = models.ForeignKey('BuildingZone', related_name='zone')
+    link = models.ForeignKey('BuildingZone', related_name='link')
+    location = postgres.fields.ArrayField(base_field=models.IntegerField())
 
     def __str__(self):
         return '%s' % (self.name)
@@ -329,7 +326,7 @@ class RoundArea(models.Model):
         #return list of nodes with check flag. (for determining round data compleateness)
         pass
 
-    def get_issue_nodes(self, resolved=false, limit=None):
+    def get_issue_nodes(self, resolved=False, limit=None):
         #return list of nodes without check flag that have current issues
         #include resolved issues if "resolved" is true
         #limit search to issues newer than "limit" date
@@ -352,15 +349,15 @@ class Issue(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    author = models.ForeignKey('User')
+    author = models.ForeignKey('auth.user')
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
-    editedby = models.ForeignKey('User')
+    editedby = models.ForeignKey('auth.user', related_name='issue_editedby')
     content = models.TextField(max_length=1000)
-    node = models.ForeignKey('RoundAreaNode')
+    node = models.ForeignKey('RoundArea')
     status = models.CharField(max_length=2, choices=STATUSES)
     # comments = postgres.fields.ArrayField(base_field=models.IntegerField) # Access through back related set
-    images = postgres.fields.ArrayField(base_field=models.IntegerField)
+    images = postgres.fields.ArrayField(base_field=models.IntegerField())
 
     def __str__(self):
         return '%s' % (self.name)
@@ -369,15 +366,15 @@ class Issue(models.Model):
 class IssueComment(models.Model):
     id = models.AutoField(primary_key=True)
     issue = models.ForeignKey('Issue')
-    author = models.ForeignKey('User')
+    author = models.ForeignKey('auth.user')
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
-    editedby = models.ForeignKey('User')
+    editedby = models.ForeignKey('auth.user', related_name='issuecomment_editedby')
     content = models.TextField(max_length=1000)
     # comments = postgres.fields.ArrayField(base_field=models.IntegerField) # Access through back related set
-    access = models.ManyToManyField("User")
-    access_level = models.CharField(max_length=2, choices=User.ACCESS_LEVELS, default=User.RA)
-    images = postgres.fields.ArrayField(base_field=models.IntegerField)
+    access = models.ManyToManyField("auth.user", related_name='issuecomment_access')
+    #access_level = models.CharField(max_length=2, choices=auth.user.ACCESS_LEVELS, default=auth.user.RA)
+    images = postgres.fields.ArrayField(base_field=models.IntegerField())
 
 
 class RoundData(models.Model):
@@ -391,14 +388,14 @@ class RoundData(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
-    author = models.ForeignKey('User')
+    author = models.ForeignKey('auth.user')
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
-    editedby = models.ForeignKey('User')
+    editedby = models.ForeignKey('auth.user', related_name='rounddata_editedby')
     area = models.ForeignKey('RoundArea')
     status = models.CharField(max_length=2, choices=STATUSES)
     data = postgres.fields.JSONField()  # json keyvalue pairs
-    images = postgres.fields.ArrayField(base_field=models.IntegerField)
+    images = postgres.fields.ArrayField(base_field=models.IntegerField())
 
 
 #############################################
@@ -415,7 +412,7 @@ class Image:
 #############################################
 class LogAction(models.Model):
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey('User')
+    user = models.ForeignKey('auth.user')
     action = models.CharField(max_length=100)  # quick action summery, 2-4 words
     timestamp = models.DateTimeField(auto_now_add=True)
     detail = models.TextField(max_length=1000)
