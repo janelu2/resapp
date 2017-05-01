@@ -16,4 +16,4 @@ urlpatterns = [
 #    url(r'^ra/(?P<pk>\d+)/$', views.form_detail, name='form_detail'),
 #    url(r'^student/(?P<pk>\d+)/$', views.student_detail, name='student_detail'),
 ]
-
+ urlpatterns.extend(api.make_url_patterns())

@@ -1,9 +1,11 @@
 import datetime
 import hashlib
+import hmac
 import base64
 from django.db import models
 from django.utils import timezone
 from django.contrib import postgres
+from django.core.signing import Signer
 import django.contrib.postgres.fields #force the module to load
 
 class Resident(models.Model):
@@ -64,7 +66,7 @@ class ConditionReport(models.Model):
     edited = models.DateTimeField(auto_now=True)
     editedby = models.ForeignKey('User')
     images = postgres.fields.ArrayField(base_field=models.IntegerField)
-    
+
     def empty(self):
         # return via back relation if no residents are assigned to the room
         pass
@@ -75,7 +77,7 @@ class User(models.Model):
     RA = "RA"
     PRO_STAFF = "PS"
     DIRECTOR = "DR"
-    ACCESS_LEVLES = (
+    ACCESS_LEVELS = (
         ('RA', "RA"),
         ('PS', "Pro Staff"),
         ('DR', "Director")
@@ -86,11 +88,20 @@ class User(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     hashpass = models.CharField(max_length=256)
-    access = models.CharField(max_length=2, choices=ACCESS_LEVLES, default=RA)
+    access = models.CharField(max_length=2, choices=ACCESS_LEVELS, default=RA)
     resident = models.ForeignKey('Resident', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
+
+    def generate_token(self, issued):
+        '''issued = isoformat timestamp'''
+        signer = Signer()
+        mac = self.username + issued
+        signed_mac = signer.sign(mac)
+        token = hashlib.sha256(signed_mac.encode('utf-8'))
+        digest = base64.urlsafe_b64encode(token.digest())
+        return digest
 
 
 def now_add_hours_lambda(h):
@@ -121,7 +132,7 @@ class Note(models.Model):
     content = models.TextField(max_length=1000)  # TODO perhaos be json field
     # comments = postgres.fields.ArrayField(base_field=models.IntegerField)  # Access through back related set
     access = models.ManyToManyField("User")
-    access_level = models.CharField(max_length=2, choices=User.ACCESS_LEVLES, default=User.RA)
+    access_level = models.CharField(max_length=2, choices=User.ACCESS_LEVELS, default=User.RA)
 
 
 class FormTemplate(models.Model):
@@ -278,7 +289,7 @@ class IssueComment(models.Model):
     content = models.TextField(max_length=1000)
     # comments = postgres.fields.ArrayField(base_field=models.IntegerField) # Access through back related set
     access = models.ManyToManyField("User")
-    access_level = models.CharField(max_length=2, choices=User.ACCESS_LEVLES, default=User.RA)
+    access_level = models.CharField(max_length=2, choices=User.ACCESS_LEVELS, default=User.RA)
     images = postgres.fields.ArrayField(base_field=models.IntegerField)
 
 
@@ -315,4 +326,3 @@ class LogAction(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     detail = models.TextField(max_length=1000)
     type = models.CharField(max_length=100)  # the object type affected
-
