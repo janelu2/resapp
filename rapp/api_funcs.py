@@ -1,8 +1,29 @@
 import base64
 import hashlib
+import datetime
 from django.http import JsonResponse
+import django.contrib.auth
+from django.core.exceptions import ObjectDoesNotExist
+from .models import *
+from django.contrib.auth.models import User, Group
 
+def private_or_callable(k, v):
+    return k.startswith("_") or callable(v)
 
+def get_properties(obj):
+    props = {k: v for k, v in vars(obj).items() if not private_or_callable(k, v)}
+    return props
+
+def is_normal_type(obj):
+    return type(obj) in (int, str, bool, list, dict, tuple):
+
+def extend_depth(props):
+    ext = { k : v if is_normal_type(v) else get_properties(v) for k, v in props.items()}
+    return ext
+
+def trunate_to_ids(props):
+    trunc = { k : v if is_normal_type(v) or not hasattr("id") else getattr(v, "id") for k, v in props.items()}
+    return trunc
 
 def api_url(urlpat):
     """a decorator function to tag function with their param regexp"""
@@ -35,9 +56,9 @@ def render_json(result, err):
     return JsonResponse(res, status=status)
 
 
-def authorize(func):
+def authorize(func, ac_level=):
     '''
-    if the header looks like 
+    if the header looks like
     "Authorization: Token 4SMPkrseLzXWYxoaDrTrQOzIwmb3IJCrSc40RvKqkpM="
     take the token and authorise a user
     set req.user to the user object
@@ -45,33 +66,134 @@ def authorize(func):
     def auth_wrapper(req, *args, **kwargs):
         auth_header = req.META.get('Authorization')
         header_parts = auth_header.split(' ')
+        authflag = False
         if len(header_parts) == 2 and header_parts[0].upper() == 'TOKEN':
             token = header_parts[1]
-            # TODO IMPLIMENT
+            user = None
+            try:
+                token = models.AuthToken.objects.get(token=token)
+                if token.valid and datetime.datetime.now() < token.expires:
+                    user = token.user
+            except ObjectDoesNotExist:
+                pass
+            if user:
+                req.user = user
+                req.token = token
+                authflag = True
 
-            return func(req, *args, **kwargs)
-        else:
+        if not authflag:
             return render_json(
-                None, 
+                None,
                 {
                     "msg": "Not Authorized",
-                    "code": 403,
+                    "code": 401,
                     "source": "Auth"
                 }
             )
+        else:
+            return func(req, *args, **kwargs)
 
     return auth_wrapper
 
 
-
-@api_url(r"")
-@authorize
-def getUser(req):
+@api_url(r"auth")
+def auth(req):
     """"""
     result = None
     err = None
 
-    # TODO
+    if req.method == "POST":
+        if 'user' in req.POST and 'pass' in req.POST:
+            try:
+                from django.contrib.auth import authenticate
+                user = authenticate(username=req.POST['user'], password=req.POST['pass'])
+                if user is not None:
+                    issued = datetime.dateime.now()
+                    token = models.AuthToken(user=user)
+                    digest = token.generate_token()
+                    token.save()
+                    result = {
+                        "token": digest,
+                        "expires": toke.expires.isoformat(),
+                    }
+                else:
+                    err = {
+                        "msg": "Bad Username or Password",
+                        "code": 403,
+                        "source": "api/auth"
+                    }
+            except ObjectDoesNotExist:
+                err = {
+                    "msg": "Bad Username or Password",
+                    "code": 403,
+                    "source": "api/auth"
+                }
+        else:
+            err = {
+                "msg": "Bad Request, user and pass missing",
+                "code": 400,
+                "source": "api/auth"
+            }
+    else:
+        err = {
+            "msg": "Method Not Allowed",
+            "code": 405,
+            "source": "api/auth"
+        }
+
+    return render_json(result, err)
+
+
+
+@api_url(r"expire")
+@authorize
+def expire(req):
+    """"""
+    result = None
+    err = None
+
+    if req.token.valid and datetime.datetime.now() < req.token.expires:
+        req.token.valid = False
+        result = {
+            "success": True
+        }
+        req.token.save()
+    else:
+        err = {
+            "msg": "Token already expired",
+            "code": 409,
+            "source": "api/expire"
+        }
+
+    return render_json(result, err)
+
+@api_url(r"getuser/([0-9]+)")
+@authorize
+def getUser(req, user_id):
+    """"""
+    result = None
+    err = None
+    uid = int(user_id)
+    user = None
+
+    _round = req.GET.get("round", "False")
+    _depth =  req.GET.get("depth", "0")
+
+    try:
+        user = User.objects.get(id=uid)
+    except ObjectDoesNotExist:
+        pass
+
+    if user:
+        req.user = user
+        req.token = token
+        authflag = True
+    else:
+        err = {
+            "msg": "User does not exist",
+            "code": 404,
+            "source": "api/getuser"
+        }
 
     return render_json(result, err)
 
@@ -638,4 +760,3 @@ def searchResidentFull(req):
     # TODO
 
     return render_json(result, err)
-
