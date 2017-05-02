@@ -38,6 +38,9 @@ def ra_list(request):
 def logout(request):
     return render(request, 'rapp/logout.html')
 
+def logged_out(request):
+    return render(request, 'rapp/logged_out.html')
+
 #statistics page
 def stats(request):
     return render(request, 'rapp/statistics.html')

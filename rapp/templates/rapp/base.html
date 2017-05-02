@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load admin_urls %}
 
 <html>
 
@@ -53,7 +54,7 @@
             <li><a href="/ra_list">RAs</a></li>
             <li><a href="/statistics">Statistics</a></li>
             <li><a href="/admin">Admin Management</a></li>
-            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+            <li><a href="{% url 'logout' %}?next=/logged_out"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
         </ul>
         </div>
             {% block content %}

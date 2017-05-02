@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^safety_inspections/$', views.SafetyInspectionViolationList, name='safety_inspections'),
     url(r'^fire_alarms/$', views.FireAlarmList, name='fire_alarms'),
     url(r'^ra_list/$', views.ra_list, name='ra_list'),
+    url(r'^logged_out/$', views.logged_out, name='logged_out'),
 #    url(r'^halls/(?P<pk>\d+)/$', views.halls_list, name='halls'),
 #    url(r'^roominspection/(?P<pk>\d+)/$', views.form_detail, name='form_detail'),
 #    url(r'^ra/(?P<pk>\d+)/$', views.form_detail, name='form_detail'),
