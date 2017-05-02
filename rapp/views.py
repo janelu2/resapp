@@ -28,7 +28,7 @@ def FireAlarmList(request):
     return render(request, 'rapp/fire_alarms_list.html', {'forms': forms, 'page_name': "Fire Alarm Reports"})
 
 def halls_list(request, pk):
-    students = Student.objects.filter(status__pk=pk)
+    students = Resident.objects.filter(hall__pk=pk)
     return render(request, 'rapp/residence_hall.html', {'students': students}) 
 
 def ra_list(request):
